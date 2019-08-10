@@ -1,0 +1,13 @@
+{
+	"GITEA_HOST": "https://git.example.com",
+	"GITEA_TOKEN": "YOUR_ACCESS_TOKEN",
+	"LDAP_HOST": "ldaps://ldap.example.com:636",
+	"LDAP_USER": "cn=admin,dc=example,dc=com",
+	"LDAP_PASS": "ADMIN_PASSWORD",
+	"LDAP_SEARCH_BASE": "ou=Groups,dc=example,dc=com",
+	"LDAP_SEARCH_FILTER": "memberUid=*",
+	"MAPPING": {
+		"adm": ["admin/Owners", "staff/Admins"],
+		"staff": ["staff/Staff"]
+	}
+}
