@@ -101,7 +101,7 @@ class User:
         if org_name not in self._orgs:
             return False
 
-        return True if team_name in self._orgs[org_name].get_teams() else False
+        return team_name in self._orgs[org_name].get_teams()
 
 
 class GiteaOrganization:
