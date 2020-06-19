@@ -106,7 +106,7 @@ class User:
 
 class GiteaOrganization:
     def __init__(self, name):
-        self._name = name
+        self._name = name.lower()
         self._teams = set()
 
     def get_name(self):
@@ -133,11 +133,10 @@ class Config:
     def get_group_for(self, org_name, team_name):
         """Check if rule for given team exists, returns LDAP group"""
 
-        mapping = self.get("MAPPING")
-        key = org_name + "/" + team_name
+        key = f"{org_name}/{team_name}".lower()
 
-        for group, teams in mapping.items():
-            if key in teams:
+        for group, teams in self.get("MAPPING").items():
+            if key in map(str.lower, teams):
                 return group
 
         return None
@@ -151,12 +150,12 @@ class TeamIDMap:
         self._map = {}
 
     def add(self, org_name, team_name, team_id):
-        self._map[org_name.lower() + "/" + team_name.lower()] = team_id
+        self._map[f"{org_name}/{team_name}".lower()] = team_id
 
     def get_id(self, org_name, team_name):
         org_name = org_name.lower()
         team_name = team_name.lower()
-        key = org_name + "/" + team_name
+        key = f"{org_name}/{team_name}"
 
         if key in self._map:
             return self._map[key]
@@ -271,7 +270,7 @@ if __name__ == "__main__":
                         user.get_name()
                     )
                     print("INFO: User '" + user.get_name() + "' removed from "
-                            + org.get_name() + "/" + team_name)
+                            + f"{org.get_name()}/{team_name}")
 
         # step 2: add user to Gitea teams he should be member of but isn't
         mapping = config.get("MAPPING")
@@ -296,6 +295,6 @@ if __name__ == "__main__":
                 if team_id == None:
                     continue
 
-                print("INFO: User '" + user.get_name() + "' added to "
-                        + org_name + "/" + team_name)
                 api.add_member(team_id, user.get_name())
+                print("INFO: User '" + user.get_name() + "' added to "
+                        + f"{org_name}/{team_name}")
