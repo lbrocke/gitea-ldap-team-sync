@@ -16,50 +16,48 @@ class GiteaAPI:
     """Gitea API wrapper"""
 
     def __init__(self, host, token):
-        self._host = host + "/api/v1"
+        self._host = f"{host}/api/v1"
         self._params = {"token": token}
 
     def __get(self, path):
         try:
-            r = requests.get(self._host + path, params = self._params)
+            r = requests.get(f"{self._host}{path}", params = self._params)
             if r.status_code != 200:
-                raise GiteaAPIException("ERR: 'GET " + r.url + "' returned "
-                        + str(r.status_code))
+                raise GiteaAPIException(f"ERR: 'GET {r.url}' returned {r.status_code}")
             data = r.json()
         except HTTPError as http_e:
-            raise GiteaAPIException("ERR: Gitea API request failed: "
-                    + str(http_e))
+            raise GiteaAPIException(f"ERR: Gitea API request failed: {http_e}")
         except Exception as e:
-            raise GiteaAPIException("ERR: " + str(e))
+            raise GiteaAPIException(f"ERR: {e}")
         else:
             return data
 
     def __delete(self, path):
         try:
-            r = requests.delete(self._host + path, params = self._params)
+            r = requests.delete(f"{self._host}{path}", params = self._params)
         except HTTPError as http_e:
-            print("WARN: '" + r.url + "' failed: " + str(http_e))
+            print(f"WARN: '{r.url}' failed: {http_e}")
 
     def __put(self, path):
         try:
-            r = requests.put(self._host + path, params = self._params)
+            r = requests.put(f"{self._host}{path}", params = self._params)
         except HTTPError as http_e:
-            print("WARN: '" + r.url + "' failed: " + str(http_e))
+            print(f"WARN: '{r.url}' failed: {http_e}")
 
     def get_orgs(self):
         return self.__get("/admin/orgs")
 
     def get_teams(self, org_name):
-        return self.__get("/orgs/" + org_name + "/teams")
+        return self.__get(f"/orgs/{org_name}/teams")
 
     def get_members(self, team_id):
-        return self.__get("/teams/" + str(team_id) + "/members")
+        return self.__get(f"/teams/{team_id}/members")
 
     def remove_member(self, team_id, user_name):
-        return self.__delete("/teams/" + str(team_id) + "/members/" + user_name)
+        return self.__delete(f"/teams/{team_id}/members/{user_name}")
 
     def add_member(self, team_id, user_name):
-        return self.__put("/teams/" + str(team_id) + "/members/" + user_name)
+        return self.__put(f"/teams/{team_id}/members/{user_name}")
 
 
 class GiteaAPIException(Exception):
@@ -126,7 +124,7 @@ class Config:
 
     def get(self, key):
         if key not in self._config:
-            raise KeyError("ERR: Key '" + key + "' not found in config")
+            raise KeyError(f"ERR: Key '{key}' not found in config")
 
         return self._config[key]
 
@@ -191,7 +189,7 @@ def ldap_fetch_users(config, users):
                 for cn in cns:
                     user.add_ldap_group(cn.decode("utf-8"))
     except ldap.LDAPError as e:
-        sys.exit("ERR: Fetching users from LDAP failed: " + str(e))
+        sys.exit(f"ERR: Fetching users from LDAP failed: {e}")
 
 
 def gitea_fetch_users(api, team_id_map, users):
@@ -217,7 +215,7 @@ def gitea_fetch_users(api, team_id_map, users):
                     user_org.add_team(team_name)
                     team_id_map.add(org_name, team_name, team_id)
     except GiteaAPIException as e:
-        sys.exit("ERR: Fetching users from Gitea failed: " + str(e))
+        sys.exit(f"ERR: Fetching users from Gitea failed: {e}")
 
 
 def get_user(user_name, users):
@@ -238,7 +236,7 @@ if __name__ == "__main__":
         path = sys.argv[1]
         config = Config(path)
     except IOError:
-        sys.exit("ERR: Cannot find config file at '" + path + "'")
+        sys.exit(f"ERR: Cannot find config file at '{path}'")
     except ValueError:
         sys.exit("ERR: Configuration file is malformed")
 
@@ -269,8 +267,8 @@ if __name__ == "__main__":
                         team_id_map.get_id(org.get_name(), team_name),
                         user.get_name()
                     )
-                    print("INFO: User '" + user.get_name() + "' removed from "
-                            + f"{org.get_name()}/{team_name}")
+                    print((f"INFO: User '{user.get_name()}' removed from "
+                           f"{org.get_name()}/{team_name}"))
 
         # step 2: add user to Gitea teams he should be member of but isn't
         mapping = config.get("MAPPING")
@@ -281,7 +279,7 @@ if __name__ == "__main__":
             for team in teams:
                 split = team.split("/")
                 if len(split) != 2:
-                    sys.exit("ERR: Invalid Gitea team '" + team + "'")
+                    sys.exit(f"ERR: Invalid Gitea team '{team}'")
 
                 org_name = split[0].lower()
                 team_name = split[1].lower()
@@ -296,5 +294,5 @@ if __name__ == "__main__":
                     continue
 
                 api.add_member(team_id, user.get_name())
-                print("INFO: User '" + user.get_name() + "' added to "
-                        + f"{org_name}/{team_name}")
+                print((f"INFO: User '{user.get_name()}' added to "
+                       f"{org_name}/{team_name}"))
