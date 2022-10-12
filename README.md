@@ -2,7 +2,9 @@
 
 > Sync Gitea team members with LDAP groups
 
-Unfortunately, Gitea doesn't ([yet](https://github.com/go-gitea/gitea/issues/2121)) support syncing organization and team memberships based on LDAP groups. This script will manage team memberships based on a simple LDAP group to Gitea team mapping.
+~~Unfortunately, Gitea doesn't ([yet](https://github.com/go-gitea/gitea/issues/2121)) support syncing organization and team memberships based on LDAP groups.~~ This script will manage team memberships based on a simple LDAP group to Gitea team mapping.
+
+Note: Gitea added support for this in [v1.17.0](https://github.com/go-gitea/gitea/pull/16299).
 
 ## Configuration
 
